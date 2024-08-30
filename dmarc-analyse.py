@@ -24,7 +24,8 @@ showReportDetails = False
 def getDMARCreportAttachment(msg):
     global messageTotalCounter
     global msgFailTotalCounter
-
+    failDetectedInReport=False
+    
     # Takes the raw data and breaks it into different 'parts' & python processes it 1 at a time [1]
     for part in msg.walk():
         if part.get_content_maintype() == 'multipart':  # DMARC reports are not send as "multipart"
@@ -53,6 +54,15 @@ def getDMARCreportAttachment(msg):
 
             # Read the XML tree from dataStr
             xml = ET.ElementTree(ET.fromstring(dataStr))
+
+            # If the XML contains a xmlns Namespace, remove it
+            try:
+               for elem in xml.iter():
+                  tag_elements = elem.tag.split("}")
+                  elem.tag = tag_elements[1]
+                  elem.attrib.clear()
+            except:
+                pass
 
             # Read the XML DMARC report
             try:
